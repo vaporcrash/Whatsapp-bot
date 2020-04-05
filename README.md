@@ -46,12 +46,12 @@ The Quiz can be broken into multiple steps :
 
 ## APIs
 
-Question Management
-1. Create a question 
-.. 1. with a quiz id
+#### Question Management
+1. Create a question
+   1. with a quiz id
 2. Retrieve a question 
-.. 1. by question id
-.. 2. by question category
+   1. by question id
+   2. by question category
 3. Update a question by question id
 4. Delete a question by question id
 4. Create a quiz 
@@ -59,7 +59,7 @@ Question Management
 6. Update a quiz
 7. Delete a quiz
 
-Quiz
+#### Quiz
 1. Receive registrations
 2. Trigger quiz
 3. Handle responses
