@@ -43,6 +43,28 @@ The Quiz can be broken into multiple steps :
 | ------- |:---------:| --------:| --------: | --------: | 
 
 
+
+## APIs
+
+Question Management
+1. Create a question 
+.. 1. with a quiz id
+2. Retrieve a question 
+.. 1. by question id
+.. 2. by question category
+3. Update a question by question id
+4. Delete a question by question id
+4. Create a quiz 
+5. Retrieve a quiz by quiz name
+6. Update a quiz
+7. Delete a quiz
+
+Quiz
+1. Receive registrations
+2. Trigger quiz
+3. Handle responses
+4. wrap up quiz
+
 ## Future Tasks
 1. Cumulative leaderboard
 2. Random quiz generators
