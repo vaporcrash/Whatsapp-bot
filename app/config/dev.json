@@ -1,0 +1,7 @@
+{
+  "mongo" : {
+    "url" : "mongodb://localhost",
+    "port" : "27017",
+    "database" : "quizdb_dev"
+  }
+}
