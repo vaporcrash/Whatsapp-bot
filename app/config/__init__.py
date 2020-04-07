@@ -5,12 +5,18 @@ import json
 environment = os.environ.get("ENV") if "ENV" in os.environ else "dev"
 
 
-class Config():
-
+class Config:
     def __init__(self):
-        mongo_config_json = json.loads("{}/{}.json".format(os.path.curdir,environment))
+        config_json = json.loads("{}/{}.json".format(os.path.curdir,environment))
+        self.mongo_uri = "mongodb://{}:{}".format(config_json["mongo"]["url"],
+                                                  config_json["mongo"]["port"])
+        self.mongo_db_name = config_json["mongo"]["database"]
 
-        self.mongo_uri = "mongodb://{}:{}/{}"
+
+
+configurations = Config()
+
+
 
 
 
