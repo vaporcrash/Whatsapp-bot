@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from app.config import Config
 
-class MongoClient:
+class QuizMongoClient:
 
     def __init__(self,uri,db_name):
         self.client = MongoClient(uri)
@@ -10,7 +10,7 @@ class MongoClient:
     def insert_question(self,question_doc):
         success = self.db["questions"].insert_one(question_doc)
         print(success)
-        return success
+        return question_doc
 
 
 
