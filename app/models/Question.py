@@ -1,5 +1,5 @@
 import time
-
+from bson.objectid import ObjectId
 
 class Question:
 
@@ -23,7 +23,7 @@ class Question:
             "question_type" : question_body["question_type"].lower(),
             "difficulty" : question_body["difficulty"],
             "category" : question_body["category"].lower(),
-            # TODO : created_by field will be a phone number. we can lookup admin name using this.
+            # TODO(ROKI) : created_by field will be a phone number. we can lookup admin name using this.
             "created_by" : question_body["created_by"],
             "timestamp" : time.time()
         }
@@ -31,6 +31,10 @@ class Question:
         result = self.db.insert_question(question_doc)
         return result
 
+    def delete_question(self,question_body):
+        qid={"_id":ObjectId(question_body["question_id"])}
+        result = self.db.delete_question(qid)
+        return result
 
 if __name__ == '__main__':
     q = Question(None)

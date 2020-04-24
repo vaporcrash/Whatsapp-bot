@@ -12,7 +12,7 @@ def health():
     return "Alive and kicking!"
 
 @app.route("/question",methods=["POST"])
-def question_opertaions():
+def question_operations():
 
     # if request.method == "POST":
     body = request.json
@@ -26,6 +26,9 @@ def retrieve_question():
 
 def update_question():
     return
-
+@app.route("/question",methods=["DELETE"])
 def delete_question():
-    return
+    body=request.json
+    response = questions.delete_question(body)
+    print(response)
+    return make_response(jsonify(response),200)
