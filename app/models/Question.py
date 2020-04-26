@@ -1,5 +1,5 @@
 import time
-
+import hashlib
 
 class Question:
 
@@ -17,8 +17,10 @@ class Question:
     def create_question(self,question_body):
         self.validate(question_body)
 
+
         question_doc = {
             "question" : question_body["question"].lower(),
+            "question_hash" : str(hashlib.md5(question_body["question"].encode()).hexdigest()),
             "answers" : list(map(lambda x:x.lower(),question_body["answers"])),
             "question_type" : question_body["question_type"].lower(),
             "difficulty" : question_body["difficulty"],
