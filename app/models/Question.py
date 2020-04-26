@@ -39,5 +39,11 @@ class Question:
         result = self.db.delete_question(qid)
         return result
 
+    def retrieve_question(self,question_body):
+        qid={"_id":ObjectId(question_body["question_id"])}
+        result = self.db.retrieve_question(qid)
+        return result
+
+
 if __name__ == '__main__':
     q = Question(None)

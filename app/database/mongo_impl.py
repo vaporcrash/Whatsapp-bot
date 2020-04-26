@@ -19,7 +19,11 @@ class QuizMongoClient:
         print(success)
         return question_id
 
-
+    def retrieve_question(self,question_id):
+        print(question_id)
+        success = self.db["questions"].find_one(question_id)
+        print(success)
+        return question_id
 
 
 

@@ -20,9 +20,12 @@ def question_operations():
     print(response)
     return make_response(jsonify(response),200)
 
-
+@app.route("/question",methods=["GET"])
 def retrieve_question():
-    return
+    body=request.json
+    response = questions.retrieve_question(body)
+    print(response)
+    return make_response(jsonify(response),200)
 
 def update_question():
     return
