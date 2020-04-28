@@ -2,12 +2,12 @@ import os
 from .constants import MONGODB,DB_CHOICE
 from .mongo_impl import QuizMongoClient
 from app.config import configurations
-
+from pymongo import MongoClient
 
 def get_db_client():
     db_choice = os.environ[DB_CHOICE] if DB_CHOICE in os.environ else MONGODB
     if db_choice == MONGODB:
-        mclient = QuizMongoClient(configurations.mongo_uri,configurations.mongo_db_name)
+        mclient = QuizMongoClient(MongoClient(configurations.mongo_uri),configurations.mongo_db_name)
         return mclient
 
 print("running {}".format(__name__))

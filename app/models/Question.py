@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 
 class Question:
 
-    expected_attributes = ["question","answers","question_type","difficulty","category","created_by"]
+    expected_attributes = ["question","answers","question_type","points","category","created_by"]
 
     def __init__(self,db_client):
         self.db = db_client
@@ -15,22 +15,23 @@ class Question:
         print(data.keys())
         raise Exception
 
-    def create_question(self,question_body):
-        self.validate(question_body)
-
-
-        question_doc = {
+    def transform_request(self,question_body):
+        return {
             "question" : question_body["question"].lower(),
             "question_hash" : str(hashlib.md5(question_body["question"].encode()).hexdigest()),
-            "answers" : list(map(lambda x:x.lower(),question_body["answers"])),
+            "answers" : [[a.lower() for a in answer] for answer in question_body["answers"]],
+            "points" : question_body["points"],
             "question_type" : question_body["question_type"].lower(),
-            "difficulty" : question_body["difficulty"],
             "category" : question_body["category"].lower(),
             # TODO(ROKI) : created_by field will be a phone number. we can lookup admin name using this.
             "created_by" : question_body["created_by"],
             "timestamp" : time.time()
         }
 
+
+    def create_question(self,question_body):
+        self.validate(question_body)
+        question_doc = self.transform_request(question_body)
         result = self.db.insert_question(question_doc)
         return result
 
@@ -46,12 +47,11 @@ class Question:
 
     def update_question(self,question_body):
         qid={"_id":ObjectId(question_body["question_id"])}
-        update_list = [[k,v] for k, v in question_body.items()]
-        qup={update_list[1][0]:update_list[1][1]}
-        result = self.db.update_question(qid,qup)
+        update_doc = question_body.pop("question_id")
+        result = self.db.update_question(qid,update_doc)
         return result
 
 
 if __name__ == '__main__':
     q = Question(None)
--
+

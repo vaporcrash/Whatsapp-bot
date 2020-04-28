@@ -9,6 +9,6 @@ class CustomJSONEncoder(JSONEncoder):
 app = Flask(__name__)
 app.json_encoder = CustomJSONEncoder
 
-from app.database import db_client
-db = db_client
+from app.database import get_db_client
+db = get_db_client()
 

@@ -1,0 +1,8 @@
+{
+	"question" : "Who was the Greek god of wisdom?",
+  "answers" : [[ "Athena"]],
+  "points" : [[1]],
+  "question_type" : "text",
+  "category" : "history",
+  "created_by" : "askproxy"
+}

@@ -12,13 +12,14 @@ def health():
     return "Alive and kicking!"
 
 @app.route("/question",methods=["POST"])
-def question_operations():
-
-    # if request.method == "POST":
-    body = request.json
-    response = questions.create_question(body)
-    print(response)
-    return make_response(jsonify(response),200)
+def create_question():
+    try:
+        body = request.json
+        response = questions.create_question(body)
+        body["_id"] = response.inserted_id
+        return make_response(jsonify(body),200)
+    except Exception:
+        return make_response(jsonify({"error":"failed to insert"}),500)
 
 @app.route("/question",methods=["GET"])
 def retrieve_question():
