@@ -27,8 +27,13 @@ def retrieve_question():
     print(response)
     return make_response(jsonify(response),200)
 
+@app.route("/question",methods=["PATCH"])
 def update_question():
-    return
+    body=request.json
+    response = questions.update_question(body)
+    print(response)
+    return make_response(jsonify(response),200)
+
 @app.route("/question",methods=["DELETE"])
 def delete_question():
     body=request.json

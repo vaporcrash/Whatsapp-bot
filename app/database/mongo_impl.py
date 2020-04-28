@@ -25,6 +25,11 @@ class QuizMongoClient:
         print(success)
         return question_id
 
+    def update_question(self,question_id,q_update):
+        print(question_id)
+        success = self.db["questions"].update_one(filter=question_id,update={'$set':q_update})
+        print(success)
+        return question_id
 
 
 

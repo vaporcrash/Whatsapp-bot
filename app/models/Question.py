@@ -44,6 +44,14 @@ class Question:
         result = self.db.retrieve_question(qid)
         return result
 
+    def update_question(self,question_body):
+        qid={"_id":ObjectId(question_body["question_id"])}
+        update_list = [[k,v] for k, v in question_body.items()]
+        qup={update_list[1][0]:update_list[1][1]}
+        result = self.db.update_question(qid,qup)
+        return result
+
 
 if __name__ == '__main__':
     q = Question(None)
+-
