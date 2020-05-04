@@ -1,0 +1,5 @@
+
+
+class TelegramSendError(Exception):
+    pass
+
