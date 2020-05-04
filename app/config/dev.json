@@ -1,7 +1,10 @@
 {
   "mongo" : {
-    "url" : "localhost",
-    "port" : "27017",
-    "database" : "quiz_db"
+    "url" : "mongodb+srv://quizAdmin:quizAdmin@dev-cluster-kf2y0.mongodb.net/test?retryWrites=true&w=majority",
+    "database" : "quiz_dev"
+  },
+  "telegram" : {
+    "url" : "https://api.telegram.org/bot",
+    "token" : "1135804192:AAEtfVu4MZJuqesF6Wsph6UU0mtmPJZM2hQ"
   }
 }

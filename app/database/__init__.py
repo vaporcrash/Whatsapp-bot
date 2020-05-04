@@ -1,6 +1,6 @@
 import os
-from .constants import MONGODB,DB_CHOICE
-from .mongo_impl import QuizMongoClient
+from app.database.mongo.constants import MONGODB,DB_CHOICE
+from app.database.mongo.question_impl import QuizMongoClient
 from app.config import configurations
 from pymongo import MongoClient
 

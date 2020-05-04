@@ -1,10 +1,9 @@
 import json
 import unittest
 import mongomock
-import pymongo
 from app.models import Question
-from app.database.mongo_impl import QuizMongoClient
-from pymongo import MongoClient,ASCENDING
+from app.database.mongo.question_impl import QuizMongoClient
+from pymongo import ASCENDING
 from bson import ObjectId
 
 class QuestionsCrudTest(unittest.TestCase):
