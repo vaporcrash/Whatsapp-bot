@@ -72,7 +72,7 @@ class QuizMongoClient:
 
     def update_active_groups(self,group_id,session_id):
         filter = {"_id" : session_id}
-        update = {'addToSet': {'participants': group_id}}
+        update = {'$addToSet': {'participants': group_id}}
         self.db["sessions"].find_one_and_update(filter,update)
         return
 

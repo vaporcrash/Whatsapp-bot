@@ -20,7 +20,6 @@ def on_receive():
 
         body = flask_request.json
         print(body)
-        logger.error("recieved")
         # send_message(body)
         handler.determine_handler(body)
     except Exception:

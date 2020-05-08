@@ -1,8 +1,15 @@
 from app.config import configurations
 from app.exceptions.TelegramErrors import *
-from app.bot.bots import QuizMasterBot,PlayerBot
+from app.bot.bots import QuizMasterBot,PlayerBot,MaestroBot
+import multiprocessing as mp
 # from app.bot.bot_utils import
 import queue
+
+
+def launch_orchestrator():
+    maestro = MaestroBot()
+    maestro.run()
+    return
 
 
 class Handler:
@@ -16,8 +23,7 @@ class Handler:
         self.player_commands = {"/ready"}
         self.master_commands = {"/commence","/prepare"}
 
-    def launch_orchestrator(self, quiz_name):
-        return
+
 
 
     def determine_handler(self,msg):
@@ -30,7 +36,11 @@ class Handler:
             if cmd == "/prepare":
                 self.quizMaster.time_to_prepare(quiz_name=self.get_msg_text(msg,strip_cmd=cmd))
             if cmd == "/commence":
-                self.launch_orchestrator(quiz_name=self.get_msg_text(msg,strip_cmd=cmd))
+
+                p = mp.Process(target=launch_orchestrator)
+                p.start()
+
+                # self.launch_orchestrator(quiz_name=self.get_msg_text(msg,strip_cmd=cmd))
 
 
 
