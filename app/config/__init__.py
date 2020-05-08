@@ -13,6 +13,13 @@ class Config:
 
         self.telegram_url = "{}{}".format(config_json["telegram"]["url"],config_json["telegram"]["token"])
 
+        self.quiz_masters = set(config_json["masters"].keys())
+        self.group_to_master ={}
+        for master in config_json["masters"]:
+            for group in config_json["masters"][master]["groups_assigned"]:
+                self.group_to_master[group] = config_json["masters"][master]
+
+        self.master_groups = set(config_json["master_groups"])
 
 configurations = Config()
 
