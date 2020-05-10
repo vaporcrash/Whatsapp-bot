@@ -1,11 +1,15 @@
 import time
-import logging,time,base64,io
+from io import BytesIO
+import logging,time,base64
 from PIL import Image
 from abc import ABC,abstractmethod
 from requests import Session
-from functools import partial
+from functools import partial,lru_cache
 from app.exceptions import TelegramSendError,QuizErrors
 from app.config import configurations
+from matplotlib.figure import Figure
+
+
 
 from app.database.mongo.question_impl import QuizMongoClient
 from app.database import get_db_client
@@ -15,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class SuperBot(ABC):
 
+    QUESTION_TIMEOUT = 90
     def __init__(self):
         self._url = configurations.telegram_url
         self._photo_url = "{}/sendPhoto".format(configurations.telegram_url)
@@ -84,6 +89,10 @@ class SuperBot(ABC):
         f = partial(self.send,url=url,params=params,body=body)
         map(f,destinations)
 
+    def broadcast_photos(self,destinations,photo):
+        f = partial(self.send_photo_blob,photo_blob=photo)
+        map(f,destinations)
+        return
 
     # @abstractmethod
     # def handle_message(self,*args,**kwargs):
@@ -92,9 +101,21 @@ class SuperBot(ABC):
 class PlayerBot(SuperBot):
     def __init__(self,db_client:QuizMongoClient):
         super().__init__()
-        self.db_client = db_client
 
-    def handle_ready_message(self,group_id):
+        self.db_client = db_client
+        self._masters = configurations.quiz_masters_by_id
+
+    @lru_cache(maxsize=10)
+    def get_routing_details(self):
+        logger.info("Calling this method again!!")
+        return self.db_client.get_routing_map()
+
+
+    def find_master_for_eval(self,participant):
+        return self.get_routing_details()[str(participant)]
+
+
+    def handle_ready_message(self,group_id,group_name):
         """
         update the current session object in mongo with this group id
         :param group_id:
@@ -107,13 +128,43 @@ class PlayerBot(SuperBot):
             raise QuizErrors.NoActiveSessions()
 
         #update session with group id
-        self.db_client.update_active_groups(group_id,session["_id"])
+        self.db_client.update_active_groups(group_id,group_name,session["_id"])
+        self.db_client.initialize_score(group_id,0)
         return
 
-    def handle_score_request(self,*args,**kwargs):
+    def handle_score_request(self,group_id):
+        scores_doc = self.db_client.get_scores()
+        session_doc = self.db_client.get_active_session()
+        logger.debug("Got the score!")
+        fig = Figure()
+        ax = fig.subplots()
+        scores = scores_doc["scores"]
+        ax.barh(list(scores.keys()), list(scores.values()), color='g')
+        print(session_doc)
+        team_names = [session_doc["group_name"][x] for x in scores.keys()]
+        ax.set_yticklabels(team_names)
+        ax.set_xlabel('Scores')
+        ax.set_title('Current Score')
+        figfile = BytesIO()
+        fig.savefig(figfile, format='png')
+        logger.debug("Created the plot!")
+        figfile.seek(0)  # rewind to beginning of file
+        files = {"photo" : figfile.getvalue() }
+        self.send_multipart(group_id, self._photo_url, {"chat_id":group_id}, files)
+        logger.debug("Sent back the score!")
         return
 
-    def handle_answer_message(self,*args,**kwargs):
+    def time_since_question(self):
+        last_question = self.db_client.last_question_timestamp()
+        if time.time() - last_question > self.QUESTION_TIMEOUT:
+            return "TIMEDOUT !! "
+        return ""
+
+    def handle_answer_message(self,group_id,group_name,text):
+        dest = self.find_master_for_eval(group_id)
+        its_too_late = self.time_since_question()
+        updated_text = "{}| {}\t#{}: \n{}".format(its_too_late,group_name,group_id,text)
+        self.send_text(dest,updated_text)
         return
 
 
@@ -123,18 +174,33 @@ class QuizMasterBot(SuperBot):
         super().__init__()
         self.db_client = db_client
 
+    #
+    # def generate_file_id(self,questions):
+    #     """
+    #     uploads each question to Telegram and recieves file id.
+    #     stores filed id instead of question blob
+    #     :param questions:
+    #     :return:
+    #     """
+    #     updated_questions = []
+    #     for questions in questions:
+    #         self.uplo
 
-    def generate_file_id(self,questions):
+
+    def assign_players_to_master(self):
         """
-        uploads each question to Telegram and recieves file id.
-        stores filed id instead of question blob
-        :param questions:
+        go through list of pariticipating groups and divide them equally to players
         :return:
         """
-        updated_questions = []
-        for questions in questions:
-            self.uplo
+        masters = configurations.quiz_masters_by_id
+        participants = self.db_client.get_participants()
+        routing = {}
 
+        for i,group in enumerate(participants):
+            routing[str(group)] = masters[i % len(masters)]
+
+        logger.debug("Evaluation map : {}".format(routing))
+        self.db_client.update_evaluation_map(routing)
 
 
     def time_to_prepare(self,quiz_name):
@@ -170,9 +236,24 @@ class QuizMasterBot(SuperBot):
             "started_at" : time.time()
         }
 
-        self.db_client.insert_new_session(session_doc)
+        result_doc = {
+            "is_active" : 1,
+            "scores" : {},
+            "question_history" : {},
+            "updated_at" : str(time.time())
+        }
+        self.db_client.create_new_session(session_doc,result_doc)
+
         logger.info("Sucessfully inserted new session")
         return
+
+
+    def update_score(self,group_id,score,question_num,operation="add"):
+        self.db_client.atomic_score_inc(group_id,score)
+        return
+
+    def stop_quiz(self):
+        self.db_client.stop_active_session()
 
 
 class MaestroBot(SuperBot):
@@ -183,27 +264,33 @@ class MaestroBot(SuperBot):
         self._players = []
         logger.debug("Started Maestro!")
 
-    def send_question_to_all(self,payload):
+    def send_image_to_all(self,image):
         for player in self._players:
-            self.send_photo_blob(player,payload)
+            self.send_photo_blob(player,image)
             logger.debug("Successfully sent photo to {}".format(player))
 
-    def send_closed_to_all(self):
+    def send_text_to_all(self,text):
         for player in self._players:
-            self.send_text(player,"Question Closed!")
+            self.send_text(player,text)
             logger.debug("Successfully sent closed to {}".format(player))
 
     def run(self):
         session_doc = self.db_client.get_active_session()
         self._players = session_doc["participants"]
+        logger.debug("Got players : {}".format(self._players))
         for i,question_doc in enumerate(session_doc["questions"]):
-            # update current question
+            # update timestamp of last question. will be used to disqualify late answes
+            self.db_client.update_last_question_flags()
+            logger.debug("Updated last question flag ")
             # check input queue if pause or quit flag is set
-            self.send_question_to_all(question_doc["question"])
-            time.sleep(5)
-            self.send_question_to_all(question_doc["answer"])
-            time.sleep(5)
-            self.send_closed_to_all()
-            time.sleep(5)
+            self.send_image_to_all(question_doc["question"])
+            # self.broadcast_photos(self._players,question_doc["question"])
+            self.send_text_to_all("10 seconds")
+            time.sleep(self.QUESTION_TIMEOUT)
+            self.send_text_to_all("Time up! Question closed!")
+            time.sleep(30)
+            self.send_image_to_all(question_doc["answer"])
+            time.sleep(30)
 
-        logger.debug("Sent to all players!")
+        self.send_text_to_all("That's a wrap folks!")
+        logger.debug("Completed Asking all questions!!")
