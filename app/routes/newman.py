@@ -1,30 +1,29 @@
 from app import app,db
-import json
-from flask import request,jsonify,make_response
-from app.models import NewmanBot
+from flask import request as flask_request
+from flask import  jsonify,make_response
+from app.models.Handler import Handler
+import traceback
 import logging
-import requests
 
-murl = "https://api.telegram.org/bot1135804192:AAEtfVu4MZJuqesF6Wsph6UU0mtmPJZM2hQ/sendMessage"
 
 logger = logging.getLogger(__name__)
 
-bot = NewmanBot()
 
-def send_message(req):
-    chat_id = req["message"]["chat"]["id"]
-    rep = {"chat_id" : chat_id, "text" : "Bella Ciao, Bella Ciao, Bella Ciao Ciao Caio!"}
+handler = Handler(db)
 
-    res = requests.post(murl,json=rep)
-    print(res.status_code)
-
-
-
-
-@app.route("/",methods=["POST"])
+@app.route("/messenger",methods=["POST"])
 def on_receive():
-    body = request.json
-    print(body)
-    logger.error("recieved")
-    # send_message(body)
-    return make_response(jsonify({}),200)
+    try:
+        token  = flask_request.args.get("token")
+        if token != "1135804192:AAEtfVu4MZJuqesF6Wsph6UU0mtmPJZM2hQ":
+            return make_response({},405)
+
+        body = flask_request.json
+        print(body)
+        # send_message(body)
+        handler.determine_handler(body)
+    except Exception:
+        traceback.print_exc()
+
+    finally:
+        return make_response(jsonify({}),200)

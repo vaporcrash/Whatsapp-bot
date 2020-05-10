@@ -2,14 +2,14 @@ from app import app,db
 import json
 from flask import request,jsonify,make_response
 from app.models import Question
-
+from traceback import print_stack
 
 questions = Question(db)
 
 
-@app.route("/")
-def health():
-    return "Alive and kicking!"
+# @app.route("/")
+# def health():
+#     return "Alive and kicking!"
 
 @app.route("/question",methods=["POST"])
 def create_question():
