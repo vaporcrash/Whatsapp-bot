@@ -1,10 +1,19 @@
 {
-  "mongo" : {
-    "url" : "mongodb+srv://quizAdmin:quizAdmin@dev-cluster-kf2y0.mongodb.net/test?retryWrites=true&w=majority",
-    "database" : "quiz_dev"
+  "mongo": {
+    "url": "mongodb+srv://quizAdmin:quizAdmin@dev-cluster-kf2y0.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "quiz_test"
   },
-  "telegram" : {
-    "url" : "https://api.telegram.org/bot",
-    "token" : "1135804192:AAEtfVu4MZJuqesF6Wsph6UU0mtmPJZM2hQ"
-  }
+  "telegram": {
+    "url": "https://api.telegram.org/bot",
+    "token": "1135804192:AAEtfVu4MZJuqesF6Wsph6UU0mtmPJZM2hQ"
+  },
+  "masters": {
+    "Askproxy": {
+      "groups_assigned": [
+        "-466732659"
+      ],
+      "id": 1106388958
+    }
+  },
+  "master_groups" : ["godfathers"]
 }
