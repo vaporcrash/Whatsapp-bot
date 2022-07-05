@@ -19,6 +19,6 @@ python-dateutil==2.8.1
 requests==2.23.0
 sentinels==1.0.0
 six==1.14.0
-ujson==2.0.3
+ujson==5.4.0
 urllib3==1.25.9
 Werkzeug==1.0.0
